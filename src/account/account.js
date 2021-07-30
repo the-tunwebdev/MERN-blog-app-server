@@ -12,7 +12,7 @@ const sendGreeting = (email,name,token)=>{
   const url = `http://localhost:5000/confirmation/${token}`
    const mailOptions = {
     from: 'emiladresshere',
-    to: email,
+    to:  email,
     subject: 'Thank you for logging in',
     html: `<a href="${url}">${url}</a> `     
 
