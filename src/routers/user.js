@@ -13,7 +13,7 @@ router.post('/register', async(req,res)=>{
         
 
         const token = await user.generateAuthToken()
-        sendmail(user.email,user.name,user.id)
+        sendmail.sendGreeting(user.email,user.name,user.id)
 
         res.status(201).send({user , token})
     }catch(err){
@@ -23,7 +23,7 @@ router.post('/register', async(req,res)=>{
     
 
 })
-router.post('/confirmation/:id',async (req,res)=>{
+router.get('/confirmation/:id',async (req,res)=>{
     const id  = req.params.id
     try{
         const user_id =  await  User.findById(id)
@@ -35,7 +35,7 @@ router.post('/confirmation/:id',async (req,res)=>{
         await user_id.save()
         res.send(user_id)
         
-        return res.redirect('http://localhost:5000/users/login')
+        return res.redirect('http://localhost:5000/')
 
 
 
@@ -45,12 +45,70 @@ router.post('/confirmation/:id',async (req,res)=>{
 
     }    
 })
-router.post('/users/login',async(req,res)=>{
+router.post('/forget',async (req,res)=>{
+    
+    try{
+        
+        const user =  await  User.findOne({email : req.body.email})
+        if(!user){
+            return res.status(404).send({err : 'email doesnt exist'})
+
+        }
+        
+        res.send(user)
+        sendmail.sendResetPassword(user.email,user.name,user._id)
+        
+        
+
+
+
+    }catch(err){
+        res.status(500).send({err: 'err in the server'})
+
+
+    }    
+})
+router.get('/resetpass/:id',async (req,res)=>{
+    const _id  =  req.params.id
+    try{
+        const checkid =  await User.findById(_id)
+        if(!checkid){
+            return res.status(404).send({err : 'id doesnt exist'})
+
+        }
+        res.send(checkid)
+
+    }catch(err){
+        res.status(500).send({err: 'err in the server'})
+    }
+})
+router.patch('/resetpass/:id', async (req,res)=>{
+    const _id = req.params.id
+    try{
+        
+        const checkid =  await User.findById(_id)
+        if(!checkid){
+            return res.status(404).send({err : 'id doesnt exist'})
+
+        }
+        checkid.password = req.body.password
+        await checkid.save()
+        res.send(checkid)
+
+    }catch(err){
+        res.status(500).send({err: 'err in the server'})
+    }
+
+    
+
+})
+router.post('/login',async(req,res)=>{
     try{
         const user =  await User.findByCredentials(req.body.email, req.body.password)
-        console.log(user)
+        
         if(!user.verified === false){
             const token = await user.generateAuthToken()
+            
         
             res.send({user , token})
 
@@ -62,13 +120,13 @@ router.post('/users/login',async(req,res)=>{
 
         
     }catch(err){
-        res.status(400).send(err)
+        res.status(400).send({error : 'wrong credentials'})
 
     }
 })
 
 //logout from one session
-router.post('/users/logout',auth , async(req,res)=>{
+router.post('/logout',auth , async(req,res)=>{
     try{
         req.user.tokens = req.user.tokens.filter((token)=>{
             return token.token !== req.token

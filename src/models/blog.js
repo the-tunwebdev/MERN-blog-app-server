@@ -7,7 +7,8 @@ const taskSchema = new mongoose.Schema({
     },
     imageURL : {
         type : String,
-        trim : true 
+        trim : true ,
+        
     },
     description : {
         type : String , 
@@ -15,6 +16,15 @@ const taskSchema = new mongoose.Schema({
         required : true,
 
     },
+    likes:[{
+        type : mongoose.Schema.Types.ObjectId,
+        ref : 'User'
+    }],
+    comments:[{
+        text :  String , 
+        postedBy:{type:String,ref: 'User'}
+
+    }],
     owner :{
         type : mongoose.Schema.Types.ObjectId,
         required :  true,

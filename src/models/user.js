@@ -39,6 +39,12 @@ const userSchema =  new mongoose.Schema({
         type : Boolean,
         default : false
     },
+    
+    login_err : [{
+        type : mongoose.Schema.Types.ObjectId,
+        
+    }],
+
     tokens : [{
         token :{
             type : String , 

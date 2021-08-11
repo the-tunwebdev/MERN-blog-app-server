@@ -5,10 +5,13 @@ const auth = require('../middleware/auth')
 const Task = require('../models/blog')
 router.post('/', auth , async(req,res)=>{
     //const tasks = new Task(req.body)
-    const checkPost = await Task.findOne({ title : req.body.title , description : req.body.description})
+    const checkPost = await Task.findOne({ title : req.body.title , description : req.body.description,imageUrl: req.body.imageUrl})
+    
+    
     if(checkPost){
         const fav = new Fav ({
             ...req.body,
+            _id :  req.body.id,
             owner  : req.user._id
         })
         try{
@@ -17,7 +20,7 @@ router.post('/', auth , async(req,res)=>{
             res.status(201).send(fav)
     
         }catch(err){
-            res.status(400).send(err)
+            res.status(400).send({error : 'please authenticate'})
     
         }
 
@@ -32,7 +35,7 @@ router.post('/', auth , async(req,res)=>{
 })
 
 
-router.get('/fav',auth ,  async(req,res)=>{
+router.get('/favblog',auth ,  async(req,res)=>{
     try{
         const match  =  {}
         
@@ -51,20 +54,19 @@ router.get('/fav',auth ,  async(req,res)=>{
     }
 })
 
-router.delete('/fav/:id', auth , async (req,res)=>{
+router.delete('/favblog/:id', auth , async (req,res)=>{
     const id  = req.params.id
     try{
-        const fav = await Fav.findOneAndDelete({ _id : id , owner : req.user._id})
-        //const task  =  await Task.findOneAndDelete(id)
+        const fav = await Fav.findOneAndDelete({ _id : id})
         if(!fav){
-            return res.status(404).send()
+            return res.status(404).send({err : 'err'})
 
         }
         res.send(fav)
 
 
     }catch(e){
-        res.status(500).send()
+        res.status(500).send({err : 'server'})
 
     }
 })
