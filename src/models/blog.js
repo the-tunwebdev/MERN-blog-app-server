@@ -22,7 +22,8 @@ const taskSchema = new mongoose.Schema({
     }],
     comments:[{
         text :  String , 
-        postedBy:{type:String,ref: 'User'}
+        postedBy:{type:String,ref: 'User'},
+        
 
     }],
     owner :{

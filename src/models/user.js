@@ -2,6 +2,8 @@ const mongoose = require('mongoose')
 const validator = require('validator')
 const bcrypt = require('bcryptjs')
 const jwt =  require('jsonwebtoken')
+const express = require('express')
+var Cookies = require('cookies')
 // const Task =  require('./tasks')
 const userSchema =  new mongoose.Schema({
     name : {
@@ -70,6 +72,7 @@ userSchema.methods.generateAuthToken = async function () {
     const token = jwt.sign({ _id: user._id.toString() }, 'thisisamessage')
     user.tokens  = user.tokens.concat({token : token})
     await user.save()
+    
 
     return token
 }
@@ -93,6 +96,12 @@ userSchema.statics.findByCredentials =  async (email,password)=>{
 
     }
     return  user
+}
+userSchema.statics.findByEmail =  async (email,name)=>{
+    
+    
+
+    
 }
 //hash the updated password
 userSchema.pre('save',async function (next) {

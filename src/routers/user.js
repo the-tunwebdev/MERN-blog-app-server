@@ -2,8 +2,12 @@ const express = require('express')
 const router  =  new express.Router()
 const User  =  require('../models/user')
 const auth =  require('../middleware/auth')
-
+var Cookies = require('cookies')
 const sendmail =  require('../account/account')
+const {OAuth2Client} =  require('google-auth-library')
+const client  =  new OAuth2Client("304752809506-hleve6a10bamuqfdbj55b3raq69cc28q.apps.googleusercontent.com")
+
+const jwt  =  require('jsonwebtoken')
 
 router.post('/register', async(req,res)=>{
     
@@ -22,6 +26,47 @@ router.post('/register', async(req,res)=>{
     }
     
 
+})
+router.post('/api/googlelogin',async(req,res)=>{
+    try{
+        const {tokenId} =  req.body
+        const aman = await client.verifyIdToken({idToken : tokenId ,  audience : ""})
+       
+        const email  = await aman.payload.email
+        const name = await aman.payload.name
+        console.log(name)
+        const user  =  await User.findOne({email : email})
+        if(user){
+        
+            const {_id,name,email} =  user
+            
+            const token = await user.generateAuthToken()
+              res.send({token,_id})
+            
+        }else{
+            var randomstring = Math.random().toString(36).slice(-8);
+            const password  =  "dpfkkdgflkd"
+            
+            let user =  await User({name,email,password})
+            user.save((err,data)=>{
+                if(err){
+                    console.log('something went wrong')
+                }
+                
+                const {_id,name,email} =  user
+                  const token  = user.generateAuthToken()
+                  res.send({token,_id})
+                
+    
+            })
+        }
+    
+
+    }
+    
+    catch(error){
+        console.log(error)
+    }
 })
 router.get('/confirmation/:id',async (req,res)=>{
     const id  = req.params.id

@@ -12,14 +12,18 @@
   "license": "ISC",
   "dependencies": {
     "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.5",
+    "cookies": "^0.8.0",
     "cors": "^2.8.5",
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
+    "google-auth-library": "^7.5.0",
     "jsonwebtoken": "^8.5.1",
     "mongodb": "^3.6.10",
     "mongoose": "^5.13.4",
     "nodemailer": "^6.6.3",
     "nodemon": "^2.0.12",
+    "react-redux": "^7.2.4",
     "redux": "^4.1.1",
     "validator": "^13.6.0"
   }
