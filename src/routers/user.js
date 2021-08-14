@@ -6,56 +6,76 @@ var Cookies = require('cookies')
 const sendmail =  require('../account/account')
 const {OAuth2Client} =  require('google-auth-library')
 const client  =  new OAuth2Client("304752809506-hleve6a10bamuqfdbj55b3raq69cc28q.apps.googleusercontent.com")
+require('dotenv').config()
 
 const jwt  =  require('jsonwebtoken')
 
 router.post('/register', async(req,res)=>{
-    
-    const user  =  new User(req.body)
-    try{
-        await user.save()
+    const check  =  await User.findOne({email : req.body.email})
+        if(check){
         
+            return res.status(500).send({error : "email already exist"})
 
-        const token = await user.generateAuthToken()
-        sendmail.sendGreeting(user.email,user.name,user.id)
-
-        res.status(201).send({user , token})
-    }catch(err){
-        res.status(400).send(err)
-
-    }
+            
+        }
     
+    else{
+        const user  =  new User(req.body)
+        try{
+            await user.save()
+            
+
+            const token = await user.generateAuthToken()
+            sendmail.sendGreeting(user.email,user.name,user.id)
+
+            res.status(201).send({user , token})
+        }catch(err){
+            res.status(400).send(err)
+
+        }
+    }
 
 })
 router.post('/api/googlelogin',async(req,res)=>{
     try{
         const {tokenId} =  req.body
-        const aman = await client.verifyIdToken({idToken : tokenId ,  audience : ""})
+        const aman = await client.verifyIdToken({idToken : tokenId ,  audience : process.env.GOOGLE_ID})
        
         const email  = await aman.payload.email
         const name = await aman.payload.name
         console.log(name)
         const user  =  await User.findOne({email : email})
         if(user){
+            if(user.verified){
+            
         
-            const {_id,name,email} =  user
-            
-            const token = await user.generateAuthToken()
-              res.send({token,_id})
-            
-        }else{
+                return res.status(500).send({error : "email already exist"})
+    
+                
+            }else{
+                const {_id,name,email} =  user
+                
+                const token = await user.generateAuthToken()
+                  res.send({token,_id})
+    
+            }
+
+        }
+        
+        if(!user){
             var randomstring = Math.random().toString(36).slice(-8);
-            const password  =  "dpfkkdgflkd"
+            const password  =  randomstring
             
             let user =  await User({name,email,password})
             user.save((err,data)=>{
                 if(err){
-                    console.log('something went wrong')
+                    console.log('error')
+
                 }
                 
-                const {_id,name,email} =  user
-                  const token  = user.generateAuthToken()
-                  res.send({token,_id})
+                
+                const token  =  user.generateAuthToken()
+                res.send({token,_id})
                 
     
             })
@@ -65,7 +85,7 @@ router.post('/api/googlelogin',async(req,res)=>{
     }
     
     catch(error){
-        console.log(error)
+        res.status(500).send({error : error})
     }
 })
 router.get('/confirmation/:id',async (req,res)=>{
